@@ -24,7 +24,7 @@ def get_text(imsrc):
     return result
 
 
-def get_question(word, n=2, cutoff=0.8):
+def get_question(word, n=1, cutoff=0.8):
     return difflib.get_close_matches(word, possibilities, n=n, cutoff=cutoff)
 
 
@@ -86,9 +86,19 @@ class Window:
         self.reloadimg()
         need = self.imsrc[(self.y_slice, self.x_slice)]
         result = get_text(need)
+        if not result:
+            logger.info("未识别到文字")
+            return
         word = ''.join(result)
         logger.info("识别:{}".format(word))
-        questions = get_question(word)
+
+        cutoff = 0.9
+        max_try = 50
+        questions = get_question(word, cutoff=cutoff)
+        while not questions and max_try:
+            cutoff -= 0.01
+            max_try -= 1
+            questions = get_question(word, cutoff=cutoff)
         for q in questions:
             logger.info("问题:{}".format(q))
             logger.info("答案:{}".format(tiku[q]))
