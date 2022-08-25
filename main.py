@@ -32,8 +32,14 @@ def get_text(imsrc):
     return result
 
 
-def get_question(word, n=1, cutoff=0.8):
+def get_question(word, n=2, cutoff=0.8):
     return difflib.get_close_matches(word, possibilities, n=n, cutoff=cutoff)
+
+
+def show_img(imsrc, title='img'):
+    from PIL import Image
+    im = Image.fromarray(imsrc)
+    im.show(title)
 
 
 class Window:
@@ -85,10 +91,10 @@ class Window:
         self.hMfcDc.DeleteDC()
         win32gui.ReleaseDC(self.hwnd, self.hWndDC)
 
-    def resize(self, wight=1152, height=679):
+    def resize(self):
         self.width, self.height = win32gui.GetClientRect(self.hwnd)[2:]
         self.x_slice = slice(int(self.width * 742 / 1136.0), int(self.width * 1080 / 1136.0))
-        self.y_slice = slice(int(self.height * 41 / 640.0), int(self.width * 140 / 640.0))
+        self.y_slice = slice(int(self.height * 41 / 640.0), int(self.width * 134 / 640.0))
 
     def run(self):
         self.reloadimg()
@@ -117,9 +123,10 @@ def test():
 
     input_file = 'onmyoji_GJ3G4ZS3pU.png'
     imsrc = cv2.imread(input_file)
-    y_slice = slice(41, 140)
+    y_slice = slice(41, 134)
     x_slice = slice(742, 1080)
     need = imsrc[(y_slice, x_slice)]
+    show_img(need)
     result = get_text(need)
     word = ''.join(result)
     logger.info("识别:{}".format(word))
