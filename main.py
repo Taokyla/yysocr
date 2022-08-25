@@ -1,6 +1,8 @@
 import ctypes
 import difflib
+import json
 import os
+from glob import glob
 from typing import List, Union
 
 import easyocr
@@ -10,9 +12,15 @@ import win32gui
 import win32ui
 from loguru import logger
 
-from question_and_anwser import tiku
-
+tiku = {}
+for path in glob('questions/*.json'):
+    data = json.load(open(path, 'r', encoding='utf8'))
+    tiku.update(data)
 possibilities = tiku.keys()
+
+if not os.path.exists("log"):
+    os.makedirs("log")
+logger.add("log/run_{time}.log", rotation="00:00", retention="30 days", compression="zip")
 
 workpath = os.getcwd()
 model_storage_directory = os.path.join(workpath, 'model')
@@ -79,8 +87,8 @@ class Window:
 
     def resize(self, wight=1152, height=679):
         self.width, self.height = win32gui.GetClientRect(self.hwnd)[2:]
-        self.x_slice = slice(int(self.width * 742 / 1136), int(self.width * 1080 / 1136))
-        self.y_slice = slice(int(self.height * 41 / 640), int(self.width * 140 / 640))
+        self.x_slice = slice(int(self.width * 742 / 1136.0), int(self.width * 1080 / 1136.0))
+        self.y_slice = slice(int(self.height * 41 / 640.0), int(self.width * 140 / 640.0))
 
     def run(self):
         self.reloadimg()
