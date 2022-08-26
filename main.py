@@ -22,7 +22,7 @@ if not os.path.exists("log"):
     os.makedirs("log")
 logger.add("log/run_{time}.log", rotation="00:00", retention="30 days", compression="zip")
 
-workpath = os.getcwd()
+workpath = os.path.split(os.path.relpath(__file__))[0]
 model_storage_directory = os.path.join(workpath, 'model')
 reader = easyocr.Reader(['ch_sim'], model_storage_directory=model_storage_directory)
 
