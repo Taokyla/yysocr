@@ -12,35 +12,6 @@ import win32gui
 import win32ui
 from loguru import logger
 
-tiku = {}
-for path in glob('questions/*.json'):
-    data = json.load(open(path, 'r', encoding='utf8'))
-    tiku.update(data)
-possibilities = tiku.keys()
-
-if not os.path.exists("log"):
-    os.makedirs("log")
-logger.add("log/run_{time}.log", rotation="00:00", retention="30 days", compression="zip")
-
-workpath = os.path.split(os.path.relpath(__file__))[0]
-model_storage_directory = os.path.join(workpath, 'model')
-reader = easyocr.Reader(['ch_sim'], model_storage_directory=model_storage_directory)
-
-
-def get_text(imsrc):
-    result = reader.readtext(imsrc, detail=0)
-    return result
-
-
-def get_question(word, n=2, cutoff=0.8):
-    return difflib.get_close_matches(word, possibilities, n=n, cutoff=cutoff)
-
-
-def show_img(imsrc, title='img'):
-    from PIL import Image
-    im = Image.fromarray(imsrc)
-    im.show(title)
-
 
 class Window:
     def __init__(self, hwnd: Union[int, None], name: Union[str, None] = None, cls=None):
@@ -118,6 +89,44 @@ class Window:
             logger.info("答案:{}".format(tiku[q]))
 
 
+if __name__ == '__main__':
+    if not Window.is_admin():
+        import sys
+
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        exit(0)
+
+tiku = {}
+for path in glob('questions/*.json'):
+    data = json.load(open(path, 'r', encoding='utf8'))
+    tiku.update(data)
+possibilities = tiku.keys()
+
+if not os.path.exists("log"):
+    os.makedirs("log")
+logger.add("log/run_{time}.log", rotation="00:00", retention="30 days", compression="zip")
+
+workpath = os.path.split(os.path.relpath(__file__))[0]
+model_storage_directory = os.path.join(workpath, 'model')
+reader = easyocr.Reader(['ch_sim'], model_storage_directory=model_storage_directory)
+
+
+def get_text(imsrc):
+    result = reader.readtext(imsrc, detail=0)
+    return result
+
+
+def get_question(word, n=2, cutoff=0.8):
+    return difflib.get_close_matches(word, possibilities, n=n, cutoff=cutoff)
+
+
+def show_img(imsrc, title='img'):
+    from PIL import Image
+    im = Image.fromarray(imsrc)
+    im.show(title)
+
+
+
 def test():
     import cv2
 
@@ -136,20 +145,14 @@ def test():
         logger.info("答案:{}".format(tiku[q]))
 
 
-if __name__ == '__main__':
-    if not Window.is_admin():
-        import sys
+import time
 
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
-    else:
-        import time
-
-        label = '阴阳师-网易游戏'
-        wins = Window.get_all_windows(label)
-        if wins:
-            game = Window(wins[0])
-            while True:
-                game.run()
-                time.sleep(1.5)
-        else:
-            logger.info("no game found!")
+label = '阴阳师-网易游戏'
+wins = Window.get_all_windows(label)
+if wins:
+    game = Window(wins[0])
+    while True:
+        game.run()
+        time.sleep(1.5)
+else:
+    logger.info("no game found!")
